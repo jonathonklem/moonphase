@@ -50,9 +50,9 @@ func main() {
 }
 
 func sendAlert(daysUntilFullMoon int) {
-	accessKey := os.Getenv("AWS_ACCESS_KEY_ID");
-	secret := os.Getenv("AWS_SECRET_ACCESS_KEY");
-	region := os.Getenv("AWS_REGION");
+	accessKey := os.Getenv("MY_AWS_ACCESS_KEY_ID");
+	secret := os.Getenv("MY_AWS_SECRET_ACCESS_KEY");
+	region := os.Getenv("MY_AWS_REGION");
 	fmt.Println("Access Key: " + accessKey)
 	fmt.Println("Secret: " + secret)
 	fmt.Println(region)
@@ -77,7 +77,7 @@ func sendAlert(daysUntilFullMoon int) {
     body := "Please be mindful of the upcoming full moon."
 
     // Send the email
-    result, err := svc.SendEmail(&ses.SendEmailInput{
+    _, err = svc.SendEmail(&ses.SendEmailInput{
         Destination: &ses.Destination{
             ToAddresses: []*string{
                 aws.String(to),
