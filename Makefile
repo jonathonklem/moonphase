@@ -2,7 +2,7 @@
 
 build:
 	rm -f bin/*
-	env GOOS=linux go build -ldflags="-s -w" -o bin/aws main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/aws main.go
 
 clean:
 	rm -rf ./bin

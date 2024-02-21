@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"fmt"
 	"encoding/json"
@@ -11,6 +12,7 @@ import (
     "github.com/aws/aws-sdk-go/aws/credentials"
     "github.com/aws/aws-sdk-go/aws/session"
     "github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type MoonPhase struct {
@@ -19,7 +21,19 @@ type MoonPhase struct {
 	} `json:"currentConditions"`
 }
 
+type MyEvent struct {
+	Name string `json:"name"`
+}
+
 func main() {
+	lambda.Start(HandleRequest)
+}
+
+func HandleRequest(ctx context.Context, event *MyEvent) (*string, error) {
+	if event == nil {
+		return nil, fmt.Errorf("received nil event")
+	}
+
 	godotenv.Load()
 	apiKey := os.Getenv("API_KEY");
 	location := os.Getenv("LOCATION");
@@ -47,6 +61,9 @@ func main() {
 	if daysUntilFullMoon > 0 && daysUntilFullMoon <= 3 {
 		sendAlert(daysUntilFullMoon)
 	}
+
+	message := fmt.Sprintf("Execution complete")
+	return &message, nil
 }
 
 func sendAlert(daysUntilFullMoon int) {
