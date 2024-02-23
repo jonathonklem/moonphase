@@ -4,9 +4,6 @@ import (
 	"context"
 	"os"
 	"fmt"
-	"encoding/json"
-	"net/http"
-	"math"
 	"github.com/joho/godotenv"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -15,15 +12,12 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-type MoonPhase struct {
-	CurrentConditions struct {
-		Moonphase float64 `json:"moonphase"`
-	} `json:"currentConditions"`
-}
+
 
 type MyEvent struct {
 	Name string `json:"name"`
 }
+
 
 func main() {
 	lambda.Start(HandleRequest)
@@ -35,65 +29,53 @@ func HandleRequest(ctx context.Context, event *MyEvent) (*string, error) {
 	}
 
 	godotenv.Load()
-	apiKey := os.Getenv("API_KEY");
-	location := os.Getenv("LOCATION");
-	url := "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" + location + "?unitGroup=metric&elements=moonphase&contentType=json&key=" + apiKey
-
-	response, err := http.Get(url)
-	defer response.Body.Close()
-
-	if err != nil {
-		fmt.Print(err.Error())
-		os.Exit(1)
-	}
-
-	var moonPhase MoonPhase;
-	err = json.NewDecoder(response.Body).Decode(&moonPhase)
-	if err != nil {
-		fmt.Print(err.Error())
-		os.Exit(1)
-	}
-
-	// api returns 1 = new moon, .5= full moon. 1/28 = 1 day of moonphase
-	daysUntilFullMoon  := int(math.Ceil(((.5-moonPhase.CurrentConditions.Moonphase)/.03571428571)))
-
+	
+	daysUntilFullMoon := getDaysUntilFullMoon()
 	// days until full moon will be negative if we pass it but we're before new moon
 	if daysUntilFullMoon > 0 && daysUntilFullMoon <= 3 {
-		sendAlert(daysUntilFullMoon)
+		sendFullMoonAlert(daysUntilFullMoon)
+	}
+
+	// next let's check if mercury is in retrograde
+	if getMercuryResponseToday() {
+		sendEmail("Mercury is in retrograde", "Please be mindful of the current retrograde.")
+	} else {
+		fmt.Println("Mercury is not in retrograde")
+		if getMercuryResponseNextWeek() {
+			fmt.Println("Mercury will be in retrograde within a week or less")
+			sendEmail("Mercury will be in retrograde within a week or less", "Please be mindful of the upcoming retrograde.")
+		} else {
+			fmt.Println("Mercury will not be in retrograde within a week")
+		
+		}
 	}
 
 	message := fmt.Sprintf("Execution complete")
 	return &message, nil
 }
 
-func sendAlert(daysUntilFullMoon int) {
+
+func sendEmail(subject string, body string) {
 	accessKey := os.Getenv("MY_AWS_ACCESS_KEY_ID");
 	secret := os.Getenv("MY_AWS_SECRET_ACCESS_KEY");
 	region := os.Getenv("MY_AWS_REGION");
-	fmt.Println("Access Key: " + accessKey)
-	fmt.Println("Secret: " + secret)
-	fmt.Println(region)
 
 	sess, err := session.NewSession(&aws.Config{
-        Region:      aws.String(region),
-        Credentials: credentials.NewStaticCredentials(accessKey, secret, ""),
+		Region:      aws.String(region),
+		Credentials: credentials.NewStaticCredentials(accessKey, secret, ""),
     })
     if err != nil {
         panic(err)
     }
 
-    // Create a new instance of the AWS SES service
+	// Create a new instance of the AWS SES service
     svc := ses.New(sess)
 
     // Set the sender and recipient email addresses
     from := os.Getenv("FROM_ADDRESS")
     to := os.Getenv("TO_ADDRESS")
 
-    // Set the email subject and body
-    subject := "Full moon is " + fmt.Sprint(daysUntilFullMoon) + " days away!"
-    body := "Please be mindful of the upcoming full moon."
-
-    // Send the email
+	// Send the email
     _, err = svc.SendEmail(&ses.SendEmailInput{
         Destination: &ses.Destination{
             ToAddresses: []*string{
@@ -117,4 +99,5 @@ func sendAlert(daysUntilFullMoon int) {
     if err != nil {
         panic(err)
     }
+
 }
