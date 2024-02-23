@@ -6,6 +6,7 @@ To deploy locally, you can use .env.  If deploying to lambda, be sure to set all
 
 The necessary configuration variables are:
 
+```
 API_KEY=__
 LOCATION=__
 AWS_ACCESS_KEY_ID=__
@@ -13,5 +14,6 @@ AWS_SECRET_ACCESS_KEY=__
 AWS_REGION=__
 FROM_ADDRESS=__
 TO_ADDRESS=__
+```
 
 LOCATION is url encoded, so it would be "evansville,%20in" for example.  Spaces can also be omitted.
