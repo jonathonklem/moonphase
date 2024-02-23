@@ -26,6 +26,5 @@ functions:
   FetchMoonData:
     handler: bin/aws
     events:
-      - http:
-          path: /fetch
-          method: get
+      - schedule:
+          rate: cron(0 7 * * ? *)
