@@ -14,7 +14,7 @@ func ProcessStates() {
 	daysUntilFullMoon := celestial.GetDaysUntilFullMoon()
 	fmt.Println("Days until full moon: ", daysUntilFullMoon)
 	// days until full moon will be negative if we pass it but we're before new moon
-	if daysUntilFullMoon <= 3 {
+	if daysUntilFullMoon <= 3 && daysUntilFullMoon >= 0{
 		if daysUntilFullMoon == 0 {
 			sendEmail("Full moon is today!", "Please be mindful of the full moon today.")
 		} else {
