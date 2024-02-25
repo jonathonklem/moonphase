@@ -9,9 +9,9 @@ The necessary configuration variables are:
 ```
 API_KEY=__
 LOCATION=__
-AWS_ACCESS_KEY_ID=__
-AWS_SECRET_ACCESS_KEY=__
-AWS_REGION=__
+MY_AWS_ACCESS_KEY_ID=__
+MY_AWS_SECRET_ACCESS_KEY=__
+MY_AWS_REGION=__
 FROM_ADDRESS=__
 TO_ADDRESS=__
 ```
