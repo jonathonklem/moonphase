@@ -1,4 +1,4 @@
-package main
+package celestial
 
 import (
 	"os"
@@ -14,7 +14,7 @@ type MoonPhase struct {
 	} `json:"currentConditions"`
 }
 
-func getDaysUntilFullMoon() int {
+func GetDaysUntilFullMoon() int {
 	apiKey := os.Getenv("API_KEY");
 	location := os.Getenv("LOCATION");
 	url := "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" + location + "?unitGroup=metric&elements=moonphase&contentType=json&key=" + apiKey
@@ -36,13 +36,4 @@ func getDaysUntilFullMoon() int {
 
 	// api returns 1 = new moon, .5= full moon. 1/28 = 1 day of moonphase
 	return int(math.Ceil(((.5-moonPhase.CurrentConditions.Moonphase)/.03571428571)))
-}
-
-func sendFullMoonAlert(daysUntilFullMoon int) {
-    // Set the email subject and body
-    subject := "Full moon is " + fmt.Sprint(daysUntilFullMoon) + " days away!"
-    body := "Please be mindful of the upcoming full moon."
-
-	sendEmail(subject, body)
-    
 }

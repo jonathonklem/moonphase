@@ -1,59 +1,40 @@
-package main
+package communication
 
 import (
-	"context"
-	"os"
 	"fmt"
-	"github.com/joho/godotenv"
+	"os"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/aws/aws-lambda-go/lambda"
+	"moonalert/celestial"
 )
 
-
-
-type MyEvent struct {
-	Name string `json:"name"`
-}
-
-
-func main() {
-	lambda.Start(HandleRequest)
-}
-
-func HandleRequest(ctx context.Context, event *MyEvent) (*string, error) {
-	if event == nil {
-		return nil, fmt.Errorf("received nil event")
-	}
-
-	godotenv.Load()
-	
-	daysUntilFullMoon := getDaysUntilFullMoon()
+func ProcessStates() {
+	daysUntilFullMoon := celestial.GetDaysUntilFullMoon()
+	fmt.Println("Days until full moon: ", daysUntilFullMoon)
 	// days until full moon will be negative if we pass it but we're before new moon
-	if daysUntilFullMoon > 0 && daysUntilFullMoon <= 3 {
-		sendFullMoonAlert(daysUntilFullMoon)
+	if daysUntilFullMoon <= 3 {
+		if daysUntilFullMoon == 0 {
+			sendEmail("Full moon is today!", "Please be mindful of the full moon today.")
+		} else {
+			sendEmail("Full moon is " + fmt.Sprint(daysUntilFullMoon) + " days away!", "Please be mindful of the upcoming full moon.")
+		}
 	}
 
 	// next let's check if mercury is in retrograde
-	if getMercuryResponseToday() {
+	if celestial.GetMercuryResponseToday() {
 		sendEmail("Mercury is in retrograde", "Please be mindful of the current retrograde.")
 	} else {
 		fmt.Println("Mercury is not in retrograde")
-		if getMercuryResponseNextWeek() {
+		if celestial.GetMercuryResponseNextWeek() {
 			fmt.Println("Mercury will be in retrograde within a week or less")
 			sendEmail("Mercury will be in retrograde within a week or less", "Please be mindful of the upcoming retrograde.")
 		} else {
 			fmt.Println("Mercury will not be in retrograde within a week")
-		
 		}
 	}
-
-	message := fmt.Sprintf("Execution complete")
-	return &message, nil
 }
-
 
 func sendEmail(subject string, body string) {
 	accessKey := os.Getenv("MY_AWS_ACCESS_KEY_ID");

@@ -1,4 +1,4 @@
-package main
+package celestial
 
 import (
 	"os"
@@ -12,7 +12,7 @@ type RetrogradeResponse	 struct {
 	IsRetrograde bool `json:"is_retrograde"`
 }
 
-func getMercuryResponseToday() bool {
+func GetMercuryResponseToday() bool {
 	retrogradeResponse, err  := http.Get("https://mercuryretrogradeapi.com")
 	defer retrogradeResponse.Body.Close()
 
@@ -32,7 +32,7 @@ func getMercuryResponseToday() bool {
 	return retrograde.IsRetrograde
 }
 
-func getMercuryResponseNextWeek() bool {
+func GetMercuryResponseNextWeek() bool {
 	currentTime := time.Now()
     oneWeekFromNow := currentTime.AddDate(0, 0, 7)
     dateString := oneWeekFromNow.Format("2006-01-02")

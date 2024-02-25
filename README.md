@@ -17,3 +17,6 @@ TO_ADDRESS=__
 ```
 
 LOCATION is url encoded, so it would be "evansville,%20in" for example.  Spaces can also be omitted.
+
+## Running
+Run locally with `go run ./endpoints/main_local.go`.  `make` builds an executable that can be deployed to lambda
